@@ -77,13 +77,14 @@ int main() {
     }
     Treenode* root = buildTree(values);
     vector<double> result = averageOfLevels(root);
+    if(result.empty()) {
+        cout << 0 << endl;
+    }
     for(double number : result) {
-        // if(number == (int)number)
-        // cout << (int)number << " ";
-        // else
-        // cout << fixed << setprecision(1) <<number << " ";
-    
-        printf("%.10g ",number);
+        if(number == (int)number)
+        cout << (int)number << " ";
+        else
+        cout << fixed << setprecision(1) <<number << " ";
     }
     return 0;
 }
