@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.h": "cpp",
         "string": "cpp",
         "format": "cpp",
         "array": "cpp",
@@ -51,6 +52,11 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "unordered_set": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "chrono": "cpp",
+        "cstring": "cpp",
+        "map": "cpp",
+        "ratio": "cpp",
+        "iomanip": "cpp"
     }
 }

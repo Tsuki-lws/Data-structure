@@ -1,67 +1,97 @@
 #include <iostream>
-#include <stack>
-#include <iomanip>
+#include <vector>
+#include <sstream>
+#include <queue>
+#include <tuple>
+#include <set>
 
 using namespace std;
 
-// 定义二叉树节点结构
-struct BTNode {
-    int data;
-    BTNode* lchild;
-    BTNode* rchild;
-};
-
-// 中序遍历
-void InOrderWithoutRecursion1(BTNode* root)
+// 得到邻接矩阵
+vector<vector<int>> getAdjacencyMatrix()
 {
-    // 空树
-    if (root == NULL)
-        return;
-    // 树非空
-    BTNode* p = root;
-    stack<BTNode*> s;
-    while (!s.empty() || p)
-    {
-        // 一直遍历到左子树最下边，边遍历边保存根节点到栈中
-        while (p)
-        {
-            s.push(p);
-            p = p->lchild;
+    int n;
+    cin >> n;
+
+    vector<vector<int>> graph(n, vector<int>(n));
+    for (int i = 0; i < n; i++) {
+        string s;
+        cin >> s;
+        stringstream ss(s);
+        int num;
+        for (int j = 0; j < n; j++) {
+            ss >> num;
+            graph[i][j] = num;
+            if (ss.peek() == ',') {
+                ss.ignore();
+            }
         }
-        // 当p为空时，说明已经到达左子树最下边，这时需要出栈了
-        if (!s.empty())
-        {
-            p = s.top();
-            s.pop();
-            cout << setw(4) << p->data;
-            // 进入右子树，开始新的一轮左子树遍历(这是递归的自我实现)
-            p = p->rchild;
+    }
+    return graph;
+}
+
+// prim算法，用来找所有的最小生成树
+void prim(const vector<vector<int>>& graph, char start) {
+    int n = graph.size();
+    vector<bool> inMST(n, false);
+    vector<tuple<int, int, int>> mstEdges; // 使用 tuple 存储边的信息
+    priority_queue<tuple<int, int, int>, vector<tuple<int, int, int>>, greater<tuple<int, int, int>>> pq;
+
+    int startIndex = start - 'A';
+    inMST[startIndex] = true;
+
+    for (int i = 0; i < n; ++i) {
+        if (graph[startIndex][i] != 0) {
+            pq.push(make_tuple(graph[startIndex][i], startIndex, i)); // 将边的信息存入优先队列
         }
+    }
+
+    vector<vector<tuple<int, int, int>>> mstResults; // 存储所有最小生成树
+
+    while (!pq.empty()) {
+        vector<bool> localInMST = inMST; // 保持每次遍历状态
+        vector<tuple<int, int, int>> localMSTEdges; // 记录当前最小生成树的边
+
+        priority_queue<tuple<int, int, int>, vector<tuple<int, int, int>>, greater<tuple<int, int, int>>> localPQ = pq;
+
+        while (!localPQ.empty()) {
+            auto [weight, u, v] = localPQ.top(); // 使用结构化绑定解包 tuple
+            localPQ.pop();
+
+            if (localInMST[v]) continue;
+
+            localInMST[v] = true;
+            localMSTEdges.push_back(make_tuple(u, v, weight)); // 将边的信息存入结果集
+
+            for (int i = 0; i < n; ++i) {
+                if (graph[v][i] != 0 && !localInMST[i]) {
+                    localPQ.push(make_tuple(graph[v][i], v, i)); // 将新的边信息存入优先队列
+                }
+            }
+        }
+
+        // 判断当前生成树是否最优，如果是，保存路径
+        if (localMSTEdges.size() == n - 1) {
+            mstResults.push_back(localMSTEdges);
+        }
+    }
+
+    // 打印所有结果
+    set<vector<tuple<int, int, int>>> uniqueMSTs(mstResults.begin(), mstResults.end()); // 用 set 去重
+
+    for (const auto& mst : uniqueMSTs) {
+        for (const auto& [u, v, weight] : mst) {
+            cout << "(" << char('A' + u) << "," << char('A' + v) << "," << weight << ")";
+        }
+        cout << endl;
     }
 }
 
-// 辅助函数：创建新节点
-BTNode* createNode(int data) {
-    BTNode* newNode = new BTNode();
-    newNode->data = data;
-    newNode->lchild = nullptr;
-    newNode->rchild = nullptr;
-    return newNode;
-}
-
-// 主函数
-int main() {
-    // 创建一个简单的二叉树
-    BTNode* root = createNode(1);
-    root->lchild = createNode(2);
-    root->rchild = createNode(3);
-    root->lchild->lchild = createNode(4);
-    root->lchild->rchild = createNode(5);
-    root->rchild->lchild = createNode(6);
-    root->rchild->rchild = createNode(7);
-
-    // 调用中序遍历函数
-    InOrderWithoutRecursion1(root);
-
+int main()
+{
+    vector<vector<int>> graph = getAdjacencyMatrix();
+    char start;
+    cin >> start;
+    prim(graph, start);
     return 0;
 }
